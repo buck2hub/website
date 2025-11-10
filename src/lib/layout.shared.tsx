@@ -7,13 +7,12 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <>
           <Image
-              src="/images/logo/logo-blue.svg"
-              width={48}
-              height={48}
-              alt="Logo"
+              src="/images/logo/logo-blue-with-word.svg"
+              width={48 * 2.5}
+              height={168 * 2.5}
+              alt="Buck2Hub"
               className="mr-2"
             />
-          Buck2hub
         </>  
       ),
     },
