@@ -40,3 +40,28 @@ export function baseOptions(): BaseLayoutProps {
     ],
   };
 }
+
+/**
+ * Shared layout configurations
+ *
+ * you can customise layouts individually from:
+ * Docs Layout: app/docs/layout.tsx
+ */
+export function docOptions(): BaseLayoutProps {
+  return {
+    nav: {
+      title: (
+        <>
+          <Image
+            src="/images/logo/logo-blue.svg"
+            width={48 * 2.5}
+            height={168 * 2.5}
+            alt="Buck2hub"
+            className="mr-2"
+          />
+          Buck2hub
+        </>
+      ),
+    },
+  };
+}

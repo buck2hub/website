@@ -1,6 +1,16 @@
 // @ts-nocheck -- skip type checking
-import * as docs_1 from "../content/docs/test.mdx?collection=docs"
+import * as docs_11 from "../content/docs/quick-start/install.mdx?collection=docs"
+import * as docs_10 from "../content/docs/quick-start/index.mdx?collection=docs"
+import * as docs_9 from "../content/docs/command/version.mdx?collection=docs"
+import * as docs_8 from "../content/docs/command/update.mdx?collection=docs"
+import * as docs_7 from "../content/docs/command/remove.mdx?collection=docs"
+import * as docs_6 from "../content/docs/command/new.mdx?collection=docs"
+import * as docs_5 from "../content/docs/command/init.mdx?collection=docs"
+import * as docs_4 from "../content/docs/command/index.mdx?collection=docs"
+import * as docs_3 from "../content/docs/command/clean.mdx?collection=docs"
+import * as docs_2 from "../content/docs/command/build.mdx?collection=docs"
+import * as docs_1 from "../content/docs/command/add.mdx?collection=docs"
 import * as docs_0 from "../content/docs/index.mdx?collection=docs"
 import { _runtime } from "fumadocs-mdx/runtime/next"
 import * as _source from "../source.config"
-export const docs = _runtime.docs<typeof _source.docs>([{ info: {"path":"index.mdx","fullPath":"content/docs/index.mdx"}, data: docs_0 }, { info: {"path":"test.mdx","fullPath":"content/docs/test.mdx"}, data: docs_1 }], [])
+export const docs = _runtime.docs<typeof _source.docs>([{ info: {"path":"index.mdx","fullPath":"content/docs/index.mdx"}, data: docs_0 }, { info: {"path":"command/add.mdx","fullPath":"content/docs/command/add.mdx"}, data: docs_1 }, { info: {"path":"command/build.mdx","fullPath":"content/docs/command/build.mdx"}, data: docs_2 }, { info: {"path":"command/clean.mdx","fullPath":"content/docs/command/clean.mdx"}, data: docs_3 }, { info: {"path":"command/index.mdx","fullPath":"content/docs/command/index.mdx"}, data: docs_4 }, { info: {"path":"command/init.mdx","fullPath":"content/docs/command/init.mdx"}, data: docs_5 }, { info: {"path":"command/new.mdx","fullPath":"content/docs/command/new.mdx"}, data: docs_6 }, { info: {"path":"command/remove.mdx","fullPath":"content/docs/command/remove.mdx"}, data: docs_7 }, { info: {"path":"command/update.mdx","fullPath":"content/docs/command/update.mdx"}, data: docs_8 }, { info: {"path":"command/version.mdx","fullPath":"content/docs/command/version.mdx"}, data: docs_9 }, { info: {"path":"quick-start/index.mdx","fullPath":"content/docs/quick-start/index.mdx"}, data: docs_10 }, { info: {"path":"quick-start/install.mdx","fullPath":"content/docs/quick-start/install.mdx"}, data: docs_11 }], [{"info":{"path":"meta.json","fullPath":"content/docs/meta.json"},"data":{"title":"Cargo Buckal","pages":["index","quick-start","command"],"defaultOpen":true}}])
