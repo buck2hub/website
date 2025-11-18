@@ -8,8 +8,8 @@ export function baseOptions(): BaseLayoutProps {
         <>
           <Image
               src="/images/logo/logo-blue-with-word.svg"
-              width={48 * 2.5}
-              height={168 * 2.5}
+              width={48 * 2}
+              height={168 * 2}
               alt="Buck2Hub"
               className="mr-2"
             />
@@ -54,8 +54,8 @@ export function docOptions(): BaseLayoutProps {
         <>
           <Image
             src="/images/logo/logo-blue.svg"
-            width={48 * 2.5}
-            height={168 * 2.5}
+            width={48}
+            height={168}
             alt="Buck2hub"
             className="mr-2"
           />
