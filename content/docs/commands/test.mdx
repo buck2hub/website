@@ -1,0 +1,36 @@
+---
+title: Test
+description: Execute unit and integration tests of a package
+---
+
+## SYNOPSIS
+`cargo test` [*options*] [*testname*] [`--` *test-executor-args*...]
+
+
+## DESCRIPTION
+Compile and execute unit and integration tests.
+
+This command is equivalent to running `buck2 test` manually, but provides options that are semantically compatible with Cargo.
+
+The test filter argument `TESTNAME` and related options are translated into appropriate Buck2 target labels, while arguments following the double dash (`--`) are passed directly to Buck2 as test executor arguments. The Buck2 test executor is expected to have `--env` flag to pass environment variables, which can be used like this:
+```bash
+cargo buckal test foo -- --env PRIVATE_KEY=123
+```
+
+## OPTIONS
+- `-p, --package <SPEC>` Test only the specified packages. This flag may be specified multiple times and supports common Unix glob patterns like `*`, `?` and `[]`. However, to avoid your shell accidentally expanding glob patterns before Cargo handles them, you must use single quotes or double quotes around each pattern.
+- `--workspace` Test all members in the workspace.
+- `--exclude <SPEC>` Exclude the specified packages. Must be used in conjunction with the `--workspace` flag. This flag may be specified multiple times and supports common Unix glob patterns like `*`, `?` and `[]`. However, to avoid your shell accidentally expanding glob patterns before Cargo handles them, you must use single quotes or double quotes around each pattern.
+- `--all-targets` Test all targets. This is equivalent to invoking `buck2 test cell//path/to/package/...`.
+- `--lib` Test the package’s library.
+- `--bin <NAME>` Test the specified binary. This flag may be specified multiple times and supports common Unix glob patterns.
+- `--bins` Test all binary targets.
+- `--example <NAME>` Test the specified example. This flag may be specified multiple times and supports common Unix glob patterns.
+- `--examples` Test all example targets.
+- `--test <NAME>` Test the specified integration test. This flag may be specified multiple times and supports common Unix glob patterns.
+- `--tests` Test all targets that have the `test = true` manifest flag set. By default this includes the library and binaries built as unittests, and integration tests. Be aware that this will also build any required dependencies, so the lib target may be built twice (once as a unittest, and once as a dependency for binaries, integration tests, etc.).
+- `--no-run` Compile, but don’t run tests.
+- `--no-fail-fast` Run all tests regardless of failure.
+- `-j, --jobs <N>` Number of threads to use during execution. Defaults to the number of logical CPUs.
+- `--target <TRIPLE>` Test for the specified target architecture. Flag may be specified multiple times. The default is the host architecture.
+- `-r, --release` Test optimized artifacts with the `release` profile.

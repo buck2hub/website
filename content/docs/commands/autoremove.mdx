@@ -1,0 +1,15 @@
+---
+title: Autoreomve
+description: Automatically remove unused dependencies
+---
+
+## SYNOPSIS
+`cargo buckal autoreomve` [*options*]
+
+
+## DESCRIPTION
+This command automatically cleans up unused third-party dependencies—specifically, the `BUCK` files under the `third-party` directory—primarily for monorepo maintenance or to remove legacy artifacts after a repository migration.
+
+
+## OPTIONS
+- `--dry-run` Don’t actually remove the dependencies.

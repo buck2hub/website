@@ -1,0 +1,54 @@
+---
+title: Configuration
+description: Configure cargo buckal
+---
+
+## Global config
+Global configuration controls the behavior of the `buckal` CLI itself—for example, which `buck2` executable to invoke. The global config file is located at `~/.config/buckal/config.toml`.
+
+| Key | Type | Default | Effect |
+| --- | --- | --- | --- |
+| `buck2_binary` | string | `"buck2"` | Path or command name of the Buck2 executable. Used when constructing `buck2` invocations. |
+
+Example:
+```toml
+# ~/.config/buckal/config.toml
+buck2_binary = "/path/to/your/buck2"
+```
+
+
+## Repository config
+Repository configuration is defined in a `buckal.toml` file located at the root of the Buck2 project. It fine-tunes how BUCK rules are generated or merged when buckal updates your workspace.
+
+| Key | Type | Default | Effect |
+| --- | --- | --- | --- |
+| `inherit_workspace_deps` | bool | `false` | When `true`, dependencies of the workspace root use `//third-party/rust:<crate>` aliases instead of per-version vendor labels, and buckal generates those aliases at `third-party/rust/BUCK`. Leave `false` to keep using versioned vendor labels. <br />This option **applies only to first-party dependencies** (i.e., workspace members); third-party dependencies continue to use their original target labels. |
+| `align_cells` | bool | `false` | When enabled, buckal rewrites all target labels according to the cell definitions in the `.buckconfig` file. For example, if you configure a cell named `myfoo` with path `project/foo`, then `//project/foo/bar:baz` will be rewritten as `myfoo//bar:baz`. Set to `false` to disable cell alignment. |
+| `ignore_tests` | bool | `true` | When `true`, `rust_test` rules are not emitted (inline tests and integration tests are skipped). Set to `false` to generate `rust_test` targets. |
+| `patch_fields` | array of strings | `[]` | Controls which attributes from existing BUCK rules are merged back into regenerated rules when a BUCK file already exists and `--no-merge` is **not** set. An empty list disables merging. |
+
+### Patch fields
+Only the listed rule attributes are mergeable. Add any subset to `patch_fields` to preserve manual edits to those fields when buckal regenerates BUCK files.
+
+- Compatibility: `target_compatible_with`, `compatible_with`, `exec_compatible_with`
+- Build settings: `env`, `features`, `rustc_flags`, `visibility`
+- Dependencies: `deps`, `os_deps`, `named_deps`, `os_named_deps`
+
+These apply to `rust_library`, `rust_binary`, `rust_test`, and `buildscript_run` rules. Other rule kinds are regenerated without patching.
+
+Example:
+```toml
+# buckal.toml
+inherit_workspace_deps = true
+ignore_tests = false
+patch_fields = [
+  "env",
+  "features",
+  "rustc_flags",
+  "visibility",
+  "deps",
+  "named_deps",
+  "os_deps",
+  "os_named_deps",
+]
+```

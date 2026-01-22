@@ -1,0 +1,28 @@
+---
+title: New
+description: Create a new package
+---
+
+## SYNOPSIS
+`cargo buckal new` [*options*] *path*
+
+
+## DESCRIPTION
+This command will create a new package in the given directory and initialize both Cargo and Buck2 configurations.
+
+This is equivalent to running `cargo new` and creating a empty BUCK file by default. However, when invoked with `--repo` or `--lite`, buckal additionally performs the following steps:
+
+- **Configures the [buckal cell](https://github.com/buck2hub/buckal-bundles)**: Sets up a custom Rust prelude that enhances Cargo compatibility on top of Buck2’s official preludes.
+- **Extracts Buck2 assets**: Installs toolchain- and platform-specific definitions to enable cross-platform compatibility and cross-compilation.
+- **Initializes cfg modifiers**: Configures conditional compilation modifiers to support switching between different build modes.
+
+See [`cargo buckal init`](init) for a similar command which will create a new package in in an existing directory.
+
+
+## OPTIONS
+- `--bin` Create a package with a binary target (`src/main.rs`). This is the default behavior.
+- `--lib` Create a package with a library target (`src/lib.rs`).
+- `--edition <EDITION>` Specify the Rust edition to use. Default is 2024. Possible values: 2015, 2018, 2021, 2024.
+- `--name <NAME>` Set the package name. Defaults to the directory name.
+- `--repo` Creates only a monorepo (Buck2 project) without performing any Cargo initialization. This option is **mutually exclusive with all others**, as it effectively serves as an enhanced version of `buck2 init`. When using it, you must separately initialize Cargo packages or manually set up a Cargo workspace.
+- `--lite` Sets up a monorepo (Buck2 project) and creates a simple package. This option does not create a Cargo workspace and is only recommended for small projects or quick tests.

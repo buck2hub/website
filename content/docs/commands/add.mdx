@@ -1,0 +1,23 @@
+---
+title: Add
+description: Add dependencies to a manifest file
+---
+
+## SYNOPSIS
+`cargo buckal add` [*options*] *crate*...
+
+
+## DESCRIPTION
+This command can add or modify dependencies, applying the changes to both `Cargo.toml` and `BUCK` files.
+
+The source for the dependency can be specified with *crate*`@`*version*, which fetches the crate from a registry with the version constraint “version”.
+
+When you add a package that is already present, the existing entry will be updated with the flags specified.
+
+
+## OPTIONS
+- `-W, --workspace` Add dependencies in workspace mode. If the crate is already present in the workspace manifest, buckal uses the version defined there; otherwise, it adds the version specified in the command to the workspace.
+- `-F, --features <FEATURES>` Space or comma separated list of features to activate. This flag may be specified multiple times, which enables all specified features.
+- `--rename <NAME>` Rename the dependency.
+- `--dev` Add as a development dependency.
+- `--build` Add as a build dependency.

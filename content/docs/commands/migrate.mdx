@@ -1,0 +1,19 @@
+---
+title: Migrate
+description: Migrate existing Cargo packages
+---
+
+## SYNOPSIS
+`cargo buckal migrate` [*options*]
+
+## DESCRIPTION
+Seamlessly migrate existing Cargo packages to Buck2.
+
+This command is used to either migrate an existing Cargo project to Buck2 for the first time (with the `--buck2` option) or to synchronize the dependency graphs between Cargo and Buck2 after manually modifying `Cargo.toml`.
+
+
+## OPTIONS
+- `--no-cache` Do not use cached data from previous runs.
+- `--merge` Merge manual edits with generated content.
+- `--buck2` Migrate with buck2 initialized.
+- `--fetch` Fetch latest bundles from remote repository.

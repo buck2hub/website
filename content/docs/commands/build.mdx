@@ -1,0 +1,24 @@
+---
+title: Build
+description: Compile the current package
+---
+
+## SYNOPSIS
+`cargo buckal build` [*options*]
+
+
+## DESCRIPTION
+Compile local packages and all of their dependencies.
+
+This command is equivalent to running `buck2 build` manually, but provides options that are semantically compatible with Cargo.
+
+
+## OPTIONS
+- `-r, --release` Build optimized artifacts with the `release` profile.
+- `-v...`  Use verbose output. May be specified twice for “very verbose” output
+- `--lib` Build the package’s library.
+- `--bin <NAME>` Build the specified binary. This flag may be specified multiple times and supports common Unix glob patterns.
+- `--bins` Build all binary targets.
+- `--example <NAME>` Build the specified example. This flag may be specified multiple times and supports common Unix glob patterns.
+- `--examples` Build all example targets.
+- `--all-targets` Build all targets. This is equivalent to invoking `buck2 build cell//path/to/package/...`.

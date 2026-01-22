@@ -1,0 +1,17 @@
+---
+title: Remove
+description: Remove dependencies from a manifest file
+---
+
+## SYNOPSIS
+`cargo buckal remove` [*options*] *dependency*...
+
+
+## DESCRIPTION
+Remove one or more dependencies from a package, applying the changes to both `Cargo.toml` and `BUCK` files.
+
+
+## OPTIONS
+- `-W, --workspace` Removes a dependency in workspace mode. If the specified dependency is inherited from the workspace, buckal removes the dependency entry from the current package and checks whether any other workspace members still depend on it. If so, the workspace-level entry is retained; otherwise, it is also removed.
+- `--dev` Remove as a development dependency.
+- `--build` Remove as a build dependency.

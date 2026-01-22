@@ -1,13 +1,68 @@
 ---
-title: Hello World
-description: Your first document
+title: Quick Start
+description: Getting Started with cargo buckal
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+## Welcome to Buckal!
+Buckal (also known as `cargo-buckal`), is a plugin that enables seamless migration from Cargo to Buck2, ensures that changes to `Cargo.toml` are automatically reflected in the generated `BUCK` files. This allows developers to use Buck2 with a familiar, Cargo-like workflow — without manual build file maintenance.
 
-## What is Next?
+![demo](../../public/images/demo.gif)
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
-</Cards>
+
+## Install Buckal
+You can install Buckal from crates.io with a single command:
+```bash
+cargo install cargo-buckal
+```
+<Callout title="NOTE">Buckal requires [Buck2](https://buck2.build/) and [Python3](https://www.python.org/). Please ensure both are installed on your system before proceeding.</Callout>
+
+
+## Migrate existing Cargo projects
+For any Cargo project that builds successfully, you can migrate to Buck2 with zero configuration by running the following command in a valid directory (one containing `Cargo.toml`). Buckal will automatically initialize the Buck2 project configuration and convert the Cargo dependency graph into `BUCK` files.
+```bash
+cargo buckal migrate --buck2
+```
+
+
+## Create a Project from Scratch
+Buck2 organizes projects in a monorepo structure, so you first need to create the repository:
+```bash
+cargo buckal new <repo_path> --repo
+```
+After that, you must manually set up a Cargo workspace to align with the monorepo layout. Once the workspace is ready, you can create new crates in appropriate locations within it:
+```bash
+cargo buckal new <crate_path>
+```
+Buckal will initialize both Cargo and Buck2 configurations automatically, but don't forget to manually add it to the `workspace.members` array in workspace manifest.
+
+<Callout>If your project consists of only a single crate and does not require a workspace, you can use the `--lite` option instead of `--repo` in the first step. This lets Buckal initialize both the repository and the crate in one go, eliminating the need for any further setup.</Callout>
+
+
+## Common Operations
+The following describes common development tasks with Buckal. For detailed usage, see [Buckal Commands](docs/commands).
+### Add a Dependency
+Inside your package directory, use the familiar Cargo-like syntax to add a dependency:
+```bash
+cargo buckal add <DEP>[@<VERSION>] [--features <FEATURES>]
+```
+### Build the Package
+To build your crate with Buck2, run:
+```bash
+cargo buckal build
+```
+### Remove generated artifacts
+Delete generated files and caches, and kill the buck2 daemon:
+```bash
+cargo buckal clean
+```
+### Migrate After Manual Edits
+If you edit `Cargo.toml` directly (e.g., adding dependencies or updating package version by hand), synchronize the changes to BUCK files by running:
+```bash
+cargo buckal migrate
+```
+
+
+## Repos using Buckal
+- [rk8s-dev/rk8s](https://github.com/rk8s-dev/rk8s): A lightweight Kubernetes-compatible container orchestration system written in Rust.
+- [web3infra-foundation/libra](https://github.com/web3infra-foundation/libra): High-performance reimplementation and extension of the core Git engine in Rust, focused on foundational VCS primitives and customizable storage semantics compatible with Git workflows.
+- [web3infra-foundation/git-internal](https://github.com/web3infra-foundation/git-internal): Internal Git infrastructure, experiments, and foundational components for Git-compatible monorepo systems.
