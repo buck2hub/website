@@ -1,6 +1,5 @@
 {
   "title": "Cargo Buckal",
   "pages": ["index", "commands", "config", "multi-platform"],
-  "root": true,
   "defaultOpen": true
 }
