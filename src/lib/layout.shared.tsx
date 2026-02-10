@@ -32,11 +32,6 @@ export function baseOptions(): BaseLayoutProps {
         url: '/blog',
         active: 'nested-url',
       },
-      {
-        text: 'Hub',
-        url: 'https://hub.buck2hub.com',
-        active: 'nested-url',
-      },
     ],
   };
 }
