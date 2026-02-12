@@ -17,14 +17,15 @@
     "lucide-react": "^0.548.0",
     "next": "^16.1.4",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/mdx": "^2.0.13",
     "@types/node": "^24.10.9",
-    "@types/react": "^19.2.9",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.0.0",

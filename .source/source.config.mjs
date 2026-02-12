@@ -5,6 +5,7 @@ import {
   frontmatterSchema,
   metaSchema
 } from "fumadocs-mdx/config";
+import { z } from "zod";
 var docs = defineDocs({
   dir: "content/docs",
   docs: {
@@ -17,12 +18,22 @@ var docs = defineDocs({
     schema: metaSchema
   }
 });
+var blog = defineDocs({
+  dir: "content/blog",
+  docs: {
+    schema: frontmatterSchema.extend({
+      date: z.string().date().or(z.date()).optional(),
+      author: z.string().optional()
+    })
+  }
+});
 var source_config_default = defineConfig({
   mdxOptions: {
     // MDX options
   }
 });
 export {
+  blog,
   source_config_default as default,
   docs
 };

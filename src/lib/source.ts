@@ -1,4 +1,4 @@
-import { docs } from '@/.source';
+import { docs, blog } from '@/.source';
 import { type InferPageType, loader } from 'fumadocs-core/source';
 import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons';
 
@@ -8,6 +8,14 @@ export const source = loader({
   source: docs.toFumadocsSource(),
   plugins: [lucideIconsPlugin()],
 });
+
+export const blogSource = loader({
+  baseUrl: '/blog',
+  source: blog.toFumadocsSource(),
+  plugins: [lucideIconsPlugin()],
+});
+
+export type BlogPost = InferPageType<typeof blogSource>;
 
 export function getPageImage(page: InferPageType<typeof source>) {
   const segments = [...page.slugs, 'image.png'];
