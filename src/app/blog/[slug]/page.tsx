@@ -1,6 +1,6 @@
 import { blogSource } from '@/lib/source';
 import { notFound } from 'next/navigation';
-import defaultComponents from 'fumadocs-ui/mdx';
+import { getMDXComponents } from '@/mdx-components';
 import Link from 'next/link';
 import type { MDXContent } from 'mdx/types';
 
@@ -66,7 +66,7 @@ export default async function BlogPage(props: { params: Promise<{ slug: string }
           </div>
         </div>
         <div className="prose dark:prose-invert max-w-none">
-          <MDX components={defaultComponents} />
+          <MDX components={getMDXComponents()} />
         </div>
       </article>
     </div>
