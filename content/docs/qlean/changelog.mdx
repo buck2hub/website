@@ -1,0 +1,41 @@
+---
+title: Changelog
+description: Notable Changes to qlean
+---
+
+## 0.2.3 (2026-2-12)
+
+### Added
+- Added support for multi-distro and custom images, and implemented streaming hash computation.
+
+
+## 0.2.2 (2026-1-31)
+
+### Fixed
+- Use `qemu:///system` URI to enable bridge creation.
+
+
+## 0.2.1 (2026-1-29)
+
+### Added
+- Fallback to TCG when KVM is unavailable.
+
+
+## 0.2.0 (2026-1-26)
+
+### Added
+- Added `MachinePool` for managing multiple machines concurrently.
+- Introduced network setup with `virsh` to ensure the "qlean" network exists.
+
+
+## 0.1.1 (2026-1-24)
+
+### Fixed
+- Match SHA512 entries by exact qcow2 filename to avoid picking JSON hashes when downloading Debian images.
+
+
+## 0.1.0 (2026-1-12)
+
+### Added
+- Implemented virtual machine lifecycle management.
+- Added SFTP file transfer and `std::fs`-compatible operations.
