@@ -22,7 +22,6 @@ Repository configuration is defined in a `buckal.toml` file located at the root 
 
 | Key | Type | Default | Effect |
 | --- | --- | --- | --- |
-| `inherit_workspace_deps` | bool | `false` | When `true`, dependencies of the workspace root use `//third-party/rust:<crate>` aliases instead of per-version vendor labels, and buckal generates those aliases at `third-party/rust/BUCK`. Leave `false` to keep using versioned vendor labels. <br />This option **applies only to first-party dependencies** (i.e., workspace members); third-party dependencies continue to use their original target labels. |
 | `align_cells` | bool | `false` | When enabled, buckal rewrites all target labels according to the cell definitions in the `.buckconfig` file. For example, if you configure a cell named `myfoo` with path `project/foo`, then `//project/foo/bar:baz` will be rewritten as `myfoo//bar:baz`. Set to `false` to disable cell alignment. |
 | `ignore_tests` | bool | `true` | When `true`, `rust_test` rules are not emitted (inline tests and integration tests are skipped). Set to `false` to generate `rust_test` targets. |
 | `patch_fields` | array of strings | `[]` | Controls which attributes from existing BUCK rules are merged back into regenerated rules when a BUCK file already exists and `--no-merge` is **not** set. An empty list disables merging. |
@@ -39,7 +38,6 @@ These apply to `rust_library`, `rust_binary`, `rust_test`, and `buildscript_run`
 Example:
 ```toml
 # buckal.toml
-inherit_workspace_deps = true
 ignore_tests = false
 patch_fields = [
   "env",

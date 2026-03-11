@@ -14,3 +14,4 @@ This command is an alias for `cargo update`, which will update dependencies in t
 ## OPTIONS
 - `-w, --workspace` Attempt to update only packages defined in the workspace. Other packages are updated only if they don’t already exist in the lockfile. This option is useful for updating `Cargo.lock` after you’ve changed version numbers in `Cargo.toml`.
 - `--dry-run` Displays what would be updated, but doesn’t actually write the lockfile.
+- `--manifest-path <PATH>` Path to the `Cargo.toml` file. By default, Buckal uses the manifest file in the current directory or any parent directory.

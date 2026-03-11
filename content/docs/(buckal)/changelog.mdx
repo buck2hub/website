@@ -1,0 +1,50 @@
+---
+title: Changelog
+description: Notable Changes to cargo buckal
+---
+
+## 0.1.2 (2026-3-8)
+
+### Added
+- Added `--manifest-path` option to commands.
+- Implemented git fetching support.
+
+### Fixed
+- Guard `new`/`init` outside Buck2 project and create `.gitignore` safely.
+
+### Changed
+- Simplified intermediate build target naming (e.g., `vendor`, `manifest`, `build-script-build`).
+
+### Removed
+- Removed `inherit_workspace_deps` from repository configuration due to lack of practical use cases.
+
+
+## 0.1.1 (2026-2-12)
+
+### Added
+- Added `--target` option for `build`/`test` commands.
+- Implemented registry integration.
+
+### Fixed
+- Migration panic in virtual workspaces.
+
+
+## 0.1.0 (2026-1-31)
+
+### Added
+- Full Cargo compatibility via custom prelude integration and upstream Buck2 prelude sync.
+- Core conversion pipeline with BUCK file parsing, rule patching, and multi-target `Cargo.toml` support.
+- Distribution of Buckal bundles as external cells via git origin.
+- New configuration capabilities, including custom Buck2 binary path and repo-specific config.
+- Better installation and CLI UX with clearer guidance, help text, and improved error handling for `init`/`new`.
+- Expanded CLI features: `migrate`, workspace `remove`/`update`, `test`, log aliases, and `--init` replacing `--buck2`.
+- Broader target support via `--lib`, `--bin`, `--bins`, `--example`, `--examples`, and `--all-targets`.
+- Multi-platform dependency generation and target platform support with tighter build/test behavior.
+- Improved dependency vendoring, caching consistency, and cache path portability.
+- Improved stability across source copying, build script rule generation, migrate initialization, and null parameter handling.
+- Improved naming consistency for first-party dependencies and default `rust_library` target naming.
+- Added pre-commit setup with prek and refreshed project metadata.
+
+### Documentation
+- Updated installation instructions.
+- Updated pre-commit hooks documentation.

@@ -15,3 +15,4 @@ Remove one or more dependencies from a package, applying the changes to both `Ca
 - `-W, --workspace` Removes a dependency in workspace mode. If the specified dependency is inherited from the workspace, buckal removes the dependency entry from the current package and checks whether any other workspace members still depend on it. If so, the workspace-level entry is retained; otherwise, it is also removed.
 - `--dev` Remove as a development dependency.
 - `--build` Remove as a build dependency.
+- `--manifest-path <PATH>` Path to the `Cargo.toml` file. By default, Buckal uses the manifest file in the current directory or any parent directory.

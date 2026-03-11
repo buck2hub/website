@@ -47,7 +47,7 @@ export default function InstallPage() {
             <div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">Prerequisites</h3>
               <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                Buckal requires <a href="https://buck2.build/" target="_blank" rel="noopener noreferrer" className="bg-gray-100 px-1 py-0.5 rounded text-gray-900 hover:bg-gray-200">Buck2</a> and <a href="https://www.python.org/" target="_blank" rel="noopener noreferrer" className="bg-gray-100 px-1 py-0.5 rounded text-gray-900 hover:bg-gray-200">Python3</a>. Please ensure both are installed on your system before proceeding.
+                Buckal requires <a href="https://buck2.build/" target="_blank" rel="noopener noreferrer" className="bg-gray-100 px-1 py-0.5 rounded text-gray-900 hover:bg-gray-200">Buck2</a>. Please ensure it's installed on your system before proceeding.
               </p>
             </div>
 
