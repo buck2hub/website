@@ -3,4 +3,171 @@ title: Image
 description: Customize VM Image
 ---
 
-## TBD
+Qlean can download and verify official cloud images automatically, but system tests often need extra packages or services baked into the guest before the VM starts. This page shows how to build those custom images with `virt-customize`, then load them through Qlean's `ImageConfig`.
+
+## Install Tools
+
+`virt-customize` is provided by libguestfs. On Debian- or Ubuntu-based hosts, install it with the same QEMU image utilities that Qlean uses:
+
+```bash
+sudo apt update
+sudo apt install libguestfs-tools qemu-utils
+```
+
+Verify the tools before modifying an image:
+
+```bash
+virt-customize --version
+qemu-img --version
+```
+
+For other host distributions, install the package that provides `virt-customize` and make sure `qemu-img` is also available.
+
+## Base Images
+
+Prefer Qlean's built-in distribution images as the base for customization. They are official cloud images, already match the guest assumptions Qlean tests regularly, and Qlean knows how to fetch and verify them when no custom `source` is provided.
+
+Built-in images are currently available for `GuestArch::Amd64` only:
+
+| Distribution | Architecture | Download link |
+| --- | --- | --- |
+| Debian 13 (Trixie) | amd64 | [debian-13-generic-amd64.qcow2](https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2) |
+| Ubuntu 24.04 LTS (Noble) | amd64 | [noble-server-cloudimg-amd64.img](https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img) |
+| Fedora Cloud 43 | amd64 | [Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2](https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2) |
+| Arch Linux Cloud | amd64 | [Arch-Linux-x86_64-cloudimg.qcow2](https://geo.mirror.pkgbuild.com/images/latest/Arch-Linux-x86_64-cloudimg.qcow2) |
+
+<Callout title="NOTE">`GuestArch::Aarch64` and `GuestArch::Riscv64` exist in the public API, but Qlean does not provide deep support for them yet. Use `GuestArch::Amd64` for the best compatibility and performance.</Callout>
+
+## Core Workflow
+
+The recommended workflow is to download a cloud image into your artifact workspace, customize that image directly, compute its digest, then point Qlean at the finished file.
+
+```bash
+# 1. Download an official base image under the final custom image name.
+curl -L \
+  -o debian-13-custom-amd64.qcow2 \
+  https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2
+
+# 2. Customize the image in place.
+sudo virt-customize -a debian-13-custom-amd64.qcow2 \
+  --update \
+  --install curl,git \
+  --run-command 'cloud-init clean --logs || true'
+
+# Optional: only run sysprep if the image has been booted or contains temporary state.
+# sudo virt-sysprep -a debian-13-custom-amd64.qcow2
+
+# 3. Verify that the result is still a qcow2 image.
+qemu-img info debian-13-custom-amd64.qcow2
+
+# 4. Compute the digest Qlean will verify before caching the image.
+sha256sum debian-13-custom-amd64.qcow2
+```
+
+Use the resulting hash as `sha256:<hex>`. Qlean also accepts `sha512:<hex>`.
+
+## Notes And Caveats
+
+- Custom images must be qcow2-compatible. Qlean creates qcow2 overlays with the custom image as the backing file.
+- Keep `cloud-init`, `systemd`, OpenSSH server binaries, and root login by SSH key available in the guest. Qlean injects cloud-init data on the first boot and starts an SSH path over vhost-vsock.
+- Do not modify an image while a Qlean VM is using it, and do not edit files under `~/.local/share/qlean/images/` in place. Create a separate customized file instead.
+- `ImageConfig.source` and `ImageConfig.digest` must be provided together. A plain filesystem path is treated as a local file; `http://` and `https://` values are downloaded.
+- Qlean caches custom images by the source filename. When replacing a customized image, use a unique filename or remove the old cached entry from `~/.local/share/qlean/images/`.
+- `virt-customize` runs package manager commands inside the guest image, so the package names must match the guest distribution, not the host distribution.
+- `virt-sysprep` is not required for a normal offline `virt-customize` flow that only installs packages or writes static files. Use it when the image has been booted, captured from a VM, or contains temporary credentials, host identity, logs, or other machine-specific state. If you run it, run it before computing the digest and test the image afterward.
+
+## Example: Debian Image With Docker
+
+This example starts from Qlean's built-in Debian image and creates a reusable Debian image with Docker preinstalled.
+
+### Build The Image
+
+Download and verify the Debian base image:
+
+```bash
+mkdir -p images
+cd images
+
+curl -LO https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2
+curl -LO https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS
+sha512sum -c --ignore-missing SHA512SUMS
+```
+
+Rename the verified base image, then customize it directly:
+
+```bash
+mv debian-13-generic-amd64.qcow2 debian-13-docker-amd64.qcow2
+
+sudo virt-customize -a debian-13-docker-amd64.qcow2 \
+  --update \
+  --install docker.io \
+  --run-command 'systemctl enable docker.service' \
+  --run-command 'cloud-init clean --logs || true'
+
+sha256sum debian-13-docker-amd64.qcow2
+```
+
+Keep the final SHA-256 value. The examples below use `sha256:<hex>` as the digest placeholder.
+
+### Load From A Local File
+
+```rust
+use anyhow::Result;
+use qlean::{Distro, Image, ImageConfig, MachineConfig, with_machine};
+
+#[tokio::test]
+async fn docker_is_available_from_local_image() -> Result<()> {
+    let image = Image::new(
+        ImageConfig::default()
+            .with_distro(Distro::Debian)
+            .with_source("/absolute/path/to/images/debian-13-docker-amd64.qcow2".to_string())
+            .with_digest("sha256:<hex>".to_string()),
+    )
+    .await?;
+
+    let config = MachineConfig::default();
+    with_machine(&image, &config, |vm| {
+        Box::pin(async {
+            let result = vm.exec("docker version --format '{{.Server.Version}}'").await?;
+            assert!(result.status.success());
+            Ok(())
+        })
+    })
+    .await?;
+
+    Ok(())
+}
+```
+
+### Download From A URL
+
+Upload `debian-13-docker-amd64.qcow2` to your artifact store or static file server, then use the URL
+with the same digest:
+
+```rust
+use anyhow::Result;
+use qlean::{Distro, Image, ImageConfig, MachineConfig, with_machine};
+
+#[tokio::test]
+async fn docker_is_available_from_remote_image() -> Result<()> {
+    let image = Image::new(
+        ImageConfig::default()
+            .with_distro(Distro::Debian)
+            .with_source("https://example.com/images/debian-13-docker-amd64.qcow2".to_string())
+            .with_digest("sha256:<hex>".to_string()),
+    )
+    .await?;
+
+    let config = MachineConfig::default();
+    with_machine(&image, &config, |vm| {
+        Box::pin(async {
+            let result = vm.exec("docker info --format '{{.ServerVersion}}'").await?;
+            assert!(result.status.success());
+            Ok(())
+        })
+    })
+    .await?;
+
+    Ok(())
+}
+```

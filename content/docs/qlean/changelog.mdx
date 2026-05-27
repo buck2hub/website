@@ -3,6 +3,29 @@ title: Changelog
 description: Notable Changes to qlean
 ---
 
+## 0.3.0 (2026-5-22)
+
+### Added
+- Introduce `ImageConfig` to support guest distro, architecture, source, and digest configuration.
+- Integrate QMP for graceful VM shutdown and running-state queries.
+- Add progress bars during image downloads.
+- Add builder-style chaining for `ImageConfig` and `MachineConfig`.
+
+### Fixed
+- Inject SSH over vhost-vsock startup logic into VMs via cloud-init to improve SSH connection stability.
+- Improve streaming hash computation performance (set `sha2` crate `opt-level = 3`).
+
+### Changed
+- Refactor image handling logic to unify built-in distro and custom image creation via the `Image::new()` interface.
+- Make SSH launch timeout configurable and support ephemeral images via auto-cleanup.
+- Tighten the public API surface and align doc comments with rustdoc conventions.
+
+### Removed
+- Remove dependency on external `sha256sum`/`sha512sum` binaries.
+- Remove kernel/initrd extraction logic; QEMU no longer boots directly from kernel, and the host no longer depends on `guestfish` or `virt-copy-out`.
+- Deprecated factory function `create_image`.
+
+
 ## 0.2.3 (2026-2-12)
 
 ### Added

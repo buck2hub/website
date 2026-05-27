@@ -5,62 +5,51 @@ description: Getting Started with Qlean
 
 ## Welcome to Qlean!
 
-**Qlean** is a system-level isolation testing library based on QEMU/KVM, providing complete virtual machine isolation environments for Rust projects.
+**Qlean** is a system-level isolation testing library built on QEMU/KVM. It spins up lightweight VMs in your Rust tests so privileged or risky operations stay off the host.
 
 
 ## Overview
 
-Qlean provides a comprehensive testing solution for projects requiring system-level isolation by launching lightweight virtual machines during tests. It addresses two major challenges:
+Qlean targets two common needs in system-level testing:
 
 **1. Complete Resource Isolation**
 
-Many projects require root privileges or direct manipulation of system-level resources. Traditional single-machine tests can easily crash the host system if tests fail. Qlean uses virtual machine isolation to completely isolate these operations within the VM, ensuring host system stability.
+Some tests need root privileges or direct access to kernel interfaces. Running them on the host can leave the machine in a bad state when a test fails. Qlean runs each test in its own VM so failures stay contained and the host stays stable.
 
-**2. Convenient Multi-Machine Testing**
+**2. Convenient Distributed Testing**
 
-For projects requiring multi-machine collaboration, Qlean provides a simple API that allows you to easily create and manage multiple VM instances in test code without complex infrastructure configuration.
+For distributed or multi-node scenarios, Qlean lets you create and coordinate several VMs from test code—no separate cluster setup or orchestration layer required.
 
 
 ## Key Features
 
-- 🔒 **Complete Isolation**: Based on QEMU, providing full virtual machine isolation
-- 🔄 **Multi-Machine Support**: Easily create and manage multiple virtual machines
+- 🔒 **Complete Isolation**: Based on QEMU/KVM, providing full virtual machine isolation
+- 🔄 **Distributed Testing**: Easily create and manage multiple virtual machines
 - 🛡️ **RAII-style Interface**: Automatic resource management ensures VMs are properly cleaned up
-- 📦 **Out-of-the-Box**: Automated image downloading and extraction, no manual configuration needed
-- 🚀 **KVM Acceleration**: Hardware acceleration enabled by default for near-bare-metal performance, with automatic fallback to QEMU's TCG when KVM is unavailable to ensure compatibility
+- 📦 **Out-of-the-Box**: Automated image downloading with verification, no manual configuration needed
+- 🐧 **Linux Native**: Native support for Linux hosts with multiple guest distributions and architectures
 
 
 ## System Prerequisites
 
 Qlean requires proper host setup, including installing QEMU and libvirt, and configuring KVM support. The following section outlines the essential system prerequisites. If you are using a Debian- or Ubuntu-based system, refer to the [detailed setup guide](qlean/setup) for step-by-step host configuration instructions.
 
-### Install CLI utils
+### Install CLI tools
 
-Before using Qlean, ensure that QEMU, guestfish, libvirt, libguestfs-tools and some other utils are properly installed on your Linux host. You can verify the installation with the following commands:
-
-```bash
-qemu-system-x86_64 --version
-qemu-img --version
-virsh --version
-guestfish --version
-virt-copy-out --version
-xorriso --version
-sha256sum --version
-sha512sum --version
-```
+Install and configure QEMU, libvirt, and xorriso on your Linux host before using Qlean.
 
 ### Configure qemu-bridge-helper
 
 Qlean uses `qemu-bridge-helper` to manage networking for multiple virtual machines, so it requires proper configuration.
 
-The `CAP_NET_ADMIN` capability needs to be set on for the default network helper:
+Grant `CAP_NET_ADMIN` to the default network helper:
 
 ```bash
 sudo chmod u-s /usr/lib/qemu/qemu-bridge-helper
 sudo setcap cap_net_admin+ep /usr/lib/qemu/qemu-bridge-helper
 ```
 
-The ACL mechanism enforced by `qemu-bridge-helper` defaults to blacklisting all users, so the `qlbr0` bridge created by qlean must be explicitly allowed:
+`qemu-bridge-helper` denies all bridges by default, so you must allow the `qlbr0` bridge that Qlean creates:
 
 ```bash
 sudo mkdir -p /etc/qemu
@@ -74,22 +63,57 @@ Add the dependency to your `Cargo.toml`:
 
 ```toml
 [dev-dependencies]
-qlean = "0.2"
+qlean = "0.3"
 tokio = { version = "1", features = ["full"] }
+tracing-indicatif = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time"] }
 ```
+
+Qlean uses [`tracing`](https://docs.rs/tracing) and [`indicatif`](https://docs.rs/indicatif) for structured logs and progress bars (for example while downloading images). To see that output in your own tests, add `tracing-indicatif` and `tracing-subscriber` as above and install a global subscriber once per process. A helper guarded with `std::sync::Once` works well when many tests share the same setup:
+
+```rust
+use std::sync::Once;
+
+use tracing_indicatif::IndicatifLayer;
+use tracing_subscriber::{
+    EnvFilter, fmt::time::LocalTime, layer::SubscriberExt, util::SubscriberInitExt,
+};
+
+static INIT: Once = Once::new();
+
+pub fn init_tracing() {
+    INIT.call_once(|| {
+        let env_filter =
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,qlean=info"));
+        let indicatif_layer = IndicatifLayer::new();
+        tracing_subscriber::registry()
+            .with(env_filter)
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .with_timer(LocalTime::rfc_3339())
+                    .with_writer(indicatif_layer.get_stderr_writer()),
+            )
+            .with(indicatif_layer)
+            .try_init()
+            .ok();
+    });
+}
+```
+
+Call `init_tracing()` at the start of each test (or from a shared test harness). Adjust verbosity with `RUST_LOG`, for example `RUST_LOG=debug,qlean=trace`.
 
 ## Basic Example
 
-Here's a simple test example with single machine:
+A minimal single-VM test:
 
 ```rust
 use anyhow::Result;
-use qlean::{Distro, MachineConfig, create_image, with_machine};
+use qlean::{Image, ImageConfig, MachineConfig, with_machine};
 
 #[tokio::test]
 async fn test_with_vm() -> Result<()> {
     // Create VM image and config
-    let image = create_image(Distro::Debian, "debian-13-generic-amd64").await?;
+    let image = Image::new(ImageConfig::default()).await?;
     let config = MachineConfig::default();
 
     // Execute tests in the virtual machine
@@ -109,23 +133,23 @@ async fn test_with_vm() -> Result<()> {
 }
 ```
 
-The following is another example of a multi-machine test:
+A distributed test with two VMs on the same virtual network:
 
 ```rust
 use anyhow::Result;
-use qlean::{Distro, MachineConfig, create_image, with_pool};
+use qlean::{Image, ImageConfig, MachineConfig, with_pool};
 
 #[tokio::test]
 async fn test_ping() -> Result<()> {
     with_pool(|pool| {
         Box::pin(async {
             // Create VM image and config
-            let image = create_image(Distro::Debian, "debian-13-generic-amd64").await?;
+            let image = Image::new(ImageConfig::default()).await?;
             let config = MachineConfig::default();
 
             // Add machines to the pool and initialize them concurrently
-            pool.add("alice".to_string(), &image, &config).await?;
-            pool.add("bob".to_string(), &image, &config).await?;
+            pool.add("alice", &image, &config).await?;
+            pool.add("bob", &image, &config).await?;
             pool.init_all().await?;
 
             // Get mutable references to both machines by name
@@ -149,9 +173,10 @@ async fn test_ping() -> Result<()> {
 }
 ```
 
-For more examples, please refer to the [tests](https://github.com/buck2hub/qlean/tree/main/tests) directory.
+More examples live in the [tests](https://github.com/buck2hub/qlean/tree/main/tests) directory.
 
 
 ## Repos using Qlean
 
 - [rk8s-dev/rk8s](https://github.com/rk8s-dev/rk8s): A lightweight Kubernetes-compatible container orchestration system written in Rust.
+- [web3infra-foundation/mega](https://github.com/web3infra-foundation/mega): A Git-compatible monorepo engine built for the AI Agent era.

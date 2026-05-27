@@ -5,56 +5,89 @@ description: Detailed Interface Reference
 
 ## Top-Level Interface
 
-- `create_image(distro, name)` - Create or retrieve a VM image from the specified distribution
-- `with_machine(image, config, f)` - Execute an async closure in a virtual machine with automatic resource cleanup
-- `with_pool(f)` - Execute an async closure in a machine pool with automatic resource cleanup
-- `MachineConfig` - Configuration for virtual machine resources (CPU, memory, disk)
+- `is_kvm_available()` - Check if KVM is available on the host.
+- `with_machine(image, config, f)` — Run an async closure with one VM; initializes on entry and shuts down on exit.
+- `with_pool(f)` — Run an async closure with a `MachinePool`; shuts down all pool members on exit.
+- `ImageConfig` - Configuration for a virtual machine image.
 
   ```rust
-  pub struct MachineConfig {
-    pub core: u32,              // Number of CPU cores
-    pub mem: u32,               // Memory size in MB
-    pub disk: Option<u32>,      // Disk size in GB (optional)
-    pub clear: bool,            // Clear resources after use
+  pub struct ImageConfig {
+    /// Architecture of the image, defaults to `GuestArch::Amd64`.
+    pub arch: GuestArch,
+    /// Distribution of the image, defaults to `Distro::Debian`.
+    pub distro: Distro,
+    /// Source of the image, it can be a URL or a local file path. 
+    /// If provided, the image will be fetched from the source and verified against the digest.
+    pub source: Option<String>,
+    /// Digest of the image, in the form of `sha256:<hex>` or `sha512:<hex>`. 
+    /// It should be provided along with the source.
+    pub digest: Option<String>,
+    /// Whether to clear the image after use, defaults to `false`. 
+    /// It is useful for custom images that are not expected to be used again.
+    pub clear: bool,
   }
   ```
 
+- `MachineConfig` - Configuration for a virtual machine.
+
+  ```rust
+  pub struct MachineConfig {
+    /// Number of CPU cores, defaults to `2`.
+    pub core: u32,
+    /// Memory in MB, defaults to `4096`.
+    pub mem: u32,
+    /// Disk size in GB, defaults to `None`.
+    /// If provided, the image will be resized to the specified size.
+    pub disk: Option<u32>,
+    /// Whether to clear the runtime directory after use, defaults to `true`.
+    pub clear: bool,
+    /// Timeout in seconds for SSH over vsock to wait during launch, 
+    /// defaults to `180` with KVM and `300` under TCG.
+    pub ssh_timeout: Option<u64>,
+  }
+  ```
+
+### Image Interface
+
+- `Image::new(config)` - Create a new image with specified configuration.
+
 ## Machine Core Interface
 
-- `Machine::new(image, config)` - Create a new machine instance
-- `Machine::init()` - Initialize the machine (first boot with cloud-init)
-- `Machine::spawn()` - Start the machine (normal boot)
-- `Machine::exec(command)` - Execute a command in the VM and return the output
-- `Machine::shutdown()` - Gracefully shutdown the virtual machine
-- `Machine::upload(src, dst)` - Upload a file or directory to the VM
-- `Machine::download(src, dst)` - Download a file or directory from the VM
-- `Machine::get_ip()` - Get the IP address of the VM
+- `Machine::new(image, config)` - Create a new machine instance.
+- `Machine::init()` - Initialize the machine (first boot with cloud-init).
+- `Machine::spawn()` - Start the machine (normal boot).
+- `Machine::exec(command)` - Execute a command in the VM and return the output.
+- `Machine::shutdown()` - Gracefully shutdown the virtual machine.
+- `Machine::upload(src, dst)` - Upload a file or directory to the VM.
+- `Machine::download(src, dst)` - Download a file or directory from the VM.
+- `Machine::get_ip()` - Get the IP address of the VM.
+- `Machine::is_running()` - Check if the VM is currently running.
 
 ## Machine Pool Interface
 
-- `MachinePool::new()` - Create a new, empty machine pool
-- `MachinePool::add(name, image, config)` - Add a new machine instance to the pool
-- `MachinePool::get(name)` - Get a machine instance by the name
-- `MachinePool::init_all()` - Initialize all machines in the pool concurrently
-- `MachinePool::spawn_all()` - Spawn all machines in the pool concurrently
-- `MachinePool::shutdown_all()` - Shutdown all machines in the pool concurrently
+- `MachinePool::new()` - Create a new, empty machine pool.
+- `MachinePool::add(name, image, config)` - Add a new machine instance to the pool.
+- `MachinePool::get(name)` - Get a machine instance by the name.
+- `MachinePool::init_all()` - Initialize all machines in the pool concurrently.
+- `MachinePool::spawn_all()` - Spawn all machines in the pool concurrently.
+- `MachinePool::shutdown_all()` - Shutdown all machines in the pool concurrently.
 
 ## std::fs Compatible Interface
 
 The following methods provide filesystem operations compatible with `std::fs` semantics:
 
-- `Machine::copy(from, to)` - Copy a file within the VM
-- `Machine::create_dir(path)` - Create a directory
-- `Machine::create_dir_all(path)` - Create a directory and all missing parent directories
-- `Machine::exists(path)` - Check if a path exists
-- `Machine::hard_link(src, dst)` - Create a hard link
-- `Machine::metadata(path)` - Get file/directory metadata
-- `Machine::read(path)` - Read file contents as bytes
-- `Machine::read_dir(path)` - Read directory entries
-- `Machine::read_link(path)` - Read symbolic link target
-- `Machine::read_to_string(path)` - Read file contents as string
-- `Machine::remove_dir_all(path)` - Remove a directory after removing all its contents
-- `Machine::remove_file(path)` - Remove a file
-- `Machine::rename(from, to)` - Rename or move a file/directory
-- `Machine::set_permissions(path, perm)` - Set file/directory permissions
-- `Machine::write(path, contents)` - Write bytes to a file
+- `Machine::copy(from, to)` - Copy a file within the VM.
+- `Machine::create_dir(path)` - Create a directory.
+- `Machine::create_dir_all(path)` - Create a directory and all missing parent directories.
+- `Machine::exists(path)` - Check if a path exists.
+- `Machine::hard_link(src, dst)` - Create a hard link.
+- `Machine::metadata(path)` - Get file/directory metadata.
+- `Machine::read(path)` - Read file contents as bytes.
+- `Machine::read_dir(path)` - Read directory entries.
+- `Machine::read_link(path)` - Read symbolic link target.
+- `Machine::read_to_string(path)` - Read file contents as string.
+- `Machine::remove_dir_all(path)` - Remove a directory after removing all its contents.
+- `Machine::remove_file(path)` - Remove a file.
+- `Machine::rename(from, to)` - Rename or move a file/directory.
+- `Machine::set_permissions(path, perm)` - Set file/directory permissions.
+- `Machine::write(path, contents)` - Write bytes to a file.
